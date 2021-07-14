@@ -10,7 +10,6 @@ import math
 # outputs: (output, hidden)
 # output_size: [batch, seq_len, hidden_size] 每个单词对应的时间步都输出一个output
 # hidden_size: [batch, hidden_size]
-
 class BiGRUEncoder(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(BiGRUEncoder, self).__init__()
@@ -26,9 +25,10 @@ class BiGRUEncoder(nn.Module):
         return outputs, hidden
 
 
-# Bi_GRU + Self_attention
-# inputs:[batch, seq_len, features]
-# outputs: [batch, hidden_size]
+# Bi_GRU + Self_attention 将output视为单词的综合表示，其中蕴含了上下单词间的信息，因此对n*m形矩阵做attention
+#（n*m中n是单词的个数，m是ouput的维度，经过linear变为n*1，过softmax得到n*1的注意力权重系数，将权重系数乘到output上，再把结果加到句子级特征表示上）
+# input_size: [batch, seq_len, features]
+# output_size: [batch, hidden_size]
 class BiGRU_selfatt(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(BiGRU_selfatt, self).__init__()
@@ -43,19 +43,18 @@ class BiGRU_selfatt(nn.Module):
         outputs, hidden = self.rnn(inputs)
         hidden = hidden.view(inputs.size(0), -1)
         
-        # [batch, seq_len, hidden_size] * [hidden_size, 1] = [batch, seq_len, 1]-->[batch, seq_len]
-        token_score = self.token_scorer(outputs).squeeze(-1)
-        token_score = token_score.softmax(dim=-1)
+        token_score = self.token_scorer(outputs).squeeze(-1) # [batch, seq_len, hidden_size] * [hidden_size, 1] = [batch, seq_len, 1] --> [batch, seq_len]
+        token_score = token_score.softmax(dim=-1) #得到注意力权重系数
+        
         # [batch, seq_len, hidden_size] * [batch, seqlen, 1] = [batch, seq_len, hidden_size]
         # 对最后一维向量乘上权重系数后求和--->[batch, hidden_size]
         weighted_sum = (outputs * token_score.unsqueeze(-1)).sum(-2)
-        
         return hidden + weighted_sum
 
 
 # BiGRU + context_attention
-# inputs : [batch, seq_len, features]
-# outputs: [batch, hidden_size] 计算全文注意力的上下文信息
+# input_size: [batch, seq_len, features]
+# output_size: [batch, hidden_size] 计算全文注意力的上下文信息
 class BiGRU_Attention(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(BiGRU_Attention, self).__init__()
@@ -75,10 +74,9 @@ class BiGRU_Attention(nn.Module):
         return context, soft_attn_weights
         
     def forward(self, inputs):
-        # inputs : [batch_size, seq_len, embedding_dim]
-        
-        # output : [batch_size, seq_len, hidden_size]
-        # hidden : [D ∗ num_layers, N, D_out]---->[batch_size, hidden_size]
+        # input_size : [batch_size, seq_len, features(embedding_dim)]
+        # output_size : [batch_size, seq_len, hidden_size]
+        # hidden : [D(directions = 2) * num_layers(rnn中可以设置 = 1), N(batch_size), D_out = hidden_size//2]---->[batch_size, hidden_size]
         output, hidden = self.rnn(inputs)
         hidden = hidden.view(inputs.size(0), -1)
         

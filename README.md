@@ -16,3 +16,6 @@ loss='binary_crossentropy' #1,0
 
 ## audio.py
 音频处理：清洗脏数据，提取音频特征表示，音频切割
+
+## excel.py
+读写excel

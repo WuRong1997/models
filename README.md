@@ -17,5 +17,9 @@ loss='binary_crossentropy' #1,0
 ## audio.py
 音频处理：清洗脏数据，提取音频特征表示，音频切割
 
+mfcc：https://blog.csdn.net/weixin_43773093/article/details/85488271
+
+vggish：https://github.com/tensorflow/models/tree/master/research/audioset/vggish
+
 ## excel.py
 读写excel

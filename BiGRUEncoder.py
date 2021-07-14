@@ -21,7 +21,7 @@ class BiGRUEncoder(nn.Module):
 
     def forward(self, inputs):
         self.rnn.flatten_parameters() #适应多gpu训练
-        outputs, hidden = self.rnn(inputs)
+        outputs, hidden = self.rnn(inputs) #nn.GRU在bidirectional=True情况下自动输出gru头和尾部的hidden，因此输出的hidden_size为[]
         hidden = hidden.view(inputs.size(0), -1)
         return outputs, hidden
 

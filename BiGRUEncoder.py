@@ -21,8 +21,8 @@ class BiGRUEncoder(nn.Module):
 
     def forward(self, inputs):
         self.rnn.flatten_parameters() #适应多gpu训练
-        outputs, hidden = self.rnn(inputs) #nn.GRU在bidirectional=True情况下自动输出gru头和尾部的hidden，因此输出的hidden_size为[]
-        hidden = hidden.view(inputs.size(0), -1)
+        outputs, hidden = self.rnn(inputs) #nn.GRU在bidirectional=True情况下自动输出gru头和尾部的hidden，因此输出的hidden_size为[2, 1, hidden_size//2]
+        hidden = hidden.view(inputs.size(0), -1) #将其整理为[1, 2*hidden_size//2] 1指batch_size
         return outputs, hidden
 
 
@@ -201,14 +201,16 @@ if __name__ == '__main__':
     inputs = torch.rand(batch_size, seq_len, input_size)
 
     pure_gru = BiGRUEncoder(input_size, hidden_size)
+    outputs, hidden = pure_gru(inputs)
+    print(outputs.shape) #torch.Size([1, 30, 256])
+    print(hidden.shape) #torch.Size([1, 256])
+    
     multi_attn = MultiheadAttention(hidden_size, 8)
     # gru_selfattn = BiGRU_selfatt(input_size, hidden_size)
     # gru_attention = BiGRU_Attention(input_size, hidden_size)
     # text_cnn = TextCNN_Encoder(input_size, [60, 30, 10])
 
-    outputs, hidden = pure_gru(inputs)
-    print(outputs.shape)
-    print(hidden.shape)
+    
 
     q = hidden.view(1, 1, -1)
     k, v = outputs, outputs

@@ -10,4 +10,4 @@ if __name__ == '__main__':
     args = parse_commandline()
     with open(args.k_path, 'r') as fr:
 
-# 命令行中
+# 命令行中使用python run.py --k_path /three/four  (换行用\)

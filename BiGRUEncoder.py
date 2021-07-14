@@ -8,7 +8,7 @@ import math
 # input: 由word2vec得到的单词级表示组成的矩阵
 # input_size:[batch, seq_len, features] seq_len指单词个数
 # outputs: (output, hidden)
-# output_size: [batch, seq_len, hidden_size]
+# output_size: [batch, seq_len, hidden_size] 每个单词对应的时间步都输出一个output
 # hidden_size: [batch, hidden_size]
 
 class BiGRUEncoder(nn.Module):

@@ -64,13 +64,14 @@ class BiGRU_Attention(nn.Module):
     
     def attention_net(self, output, hidden):
         hidden = hidden.unsqueeze(2)
-        # [batch, seq_len, hidden_size] * [batch, hidden_size, 1] = [batch, seq_len, 1] -->[batch, seq_len]
+        
+        # [batch, seq_len, hidden_size] * [batch, hidden_size, 1] = [batch, seq_len, 1] --> [batch, seq_len]
+        # 每个单词对应的output中已经含有上下单词的信息，现将句子级的全局信息加入到
         attn_weights = torch.bmm(output, hidden).squeeze(2)
         soft_attn_weights = F.softmax(attn_weights, 1)
         
         # [batch, hidden_size, seqlen] * [batch, seqlen, 1] = [batch, hidden_size, 1] --> [batch, hidden_size]
         context = torch.bmm(output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
-        
         return context, soft_attn_weights
         
     def forward(self, inputs):
@@ -80,7 +81,7 @@ class BiGRU_Attention(nn.Module):
         output, hidden = self.rnn(inputs)
         hidden = hidden.view(inputs.size(0), -1)
         
-        context, attention = self.attention_net(output, hidden)
+        context, attention = self.attention_net(output, hidden) #计算context_attention
         return context, attention
 
 

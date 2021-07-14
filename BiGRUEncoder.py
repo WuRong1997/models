@@ -4,13 +4,12 @@ import torch.nn.functional as F
 import math
 
 
-
 # Pure Bi-GRU Encoder for sequence
-# inputs:[batch, seq_len, features]
-
+# input: 由word2vec得到的单词级表示组成的矩阵
+# input_size:[batch, seq_len, features] seq_len指单词个数
 # outputs: (output, hidden)
-# output: [batch, seq_len, hidden_size]
-# hidden: [batch, hidden_size]
+# output_size: [batch, seq_len, hidden_size]
+# hidden_size: [batch, hidden_size]
 
 class BiGRUEncoder(nn.Module):
     def __init__(self, input_size, hidden_size):

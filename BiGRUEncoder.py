@@ -66,13 +66,13 @@ class BiGRU_Attention(nn.Module):
         hidden = hidden.unsqueeze(2)
         
         # [batch, seq_len, hidden_size] * [batch, hidden_size, 1] = [batch, seq_len, 1] --> [batch, seq_len]
-        # 每个单词对应的output中已经含有上下单词的信息，现将句子级的全局信息加入到
+        # 每个单词对应的output中已经含有上下单词的信息，现将句子级的全局信息加入到每个单词的表示中
         attn_weights = torch.bmm(output, hidden).squeeze(2)
         soft_attn_weights = F.softmax(attn_weights, 1)
         
         # [batch, hidden_size, seqlen] * [batch, seqlen, 1] = [batch, hidden_size, 1] --> [batch, hidden_size]
         context = torch.bmm(output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
-        return context, soft_attn_weights
+        return context, soft_attn_weights # 输出的context即为句子级表示
         
     def forward(self, inputs):
         # input_size : [batch_size, seq_len, features(embedding_dim)]

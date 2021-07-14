@@ -6,7 +6,7 @@ import math
 
 # Pure Bi-GRU Encoder for sequence
 # input: 由word2vec得到的单词级表示组成的矩阵
-# input_size:[batch, seq_len, features] seq_len指单词个数
+# input_size:[batch, seq_len, features(embedding_size)] seq_len指单词个数
 # outputs: (output, hidden)
 # output_size: [batch, seq_len, hidden_size] 每个单词对应的时间步都输出一个output
 # hidden_size: [batch, hidden_size]
@@ -16,11 +16,11 @@ class BiGRUEncoder(nn.Module):
         super(BiGRUEncoder, self).__init__()
         self.hidden_size = hidden_size
         self.input_size = input_size
-        self.rnn = nn.GRU(input_size, hidden_size//2, bidirectional=True, batch_first=True)
+        self.rnn = nn.GRU(input_size, hidden_size//2, bidirectional=True, batch_first=True) #因为双向gru，最后生成的句子级表示由gru头和尾部hidden拼接组成，所以令hidden_size//2
         self.output_size = hidden_size
 
     def forward(self, inputs):
-        self.rnn.flatten_parameters()
+        self.rnn.flatten_parameters() #适应多gpu训练
         outputs, hidden = self.rnn(inputs)
         hidden = hidden.view(inputs.size(0), -1)
         return outputs, hidden
